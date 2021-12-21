@@ -1,0 +1,13 @@
+Comment,Designator,Footprint,LCSC
+"6V","BT1","Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Horizontal",""
+"MLT-7525","BZ1","LED_matrix:MLT-7525",""
+"2.2uF","C1","Capacitor_SMD:C_1206_3216Metric",""
+"10k","R1,R2,R3,R4","Resistor_SMD:R_0201_0603Metric",""
+"470","R5,R6,R7,R8,R9,R10,R11,R12","Resistor_SMD:R_0201_0603Metric",""
+"SW_Push","SW1,SW2,SW3,SW4","Button_Switch_THT:SW_PUSH_6mm",""
+"ATtiny84A-SSU","U1","Package_SO:SOIC-14_3.9x8.7mm_P1.27mm",""
+"DS1307Z+","U2","Package_SO:SOIC-8_3.9x4.9mm_P1.27mm",""
+"HT16K33-24","U3","Package_SO:SOIC-24W_7.5x15.4mm_P1.27mm",""
+"KWM-20882AVB","U4","LED_matrix:KVM-20882AVB",""
+"SPX3819M5-L-5-0","U5","Package_TO_SOT_SMD:SOT-23-5",""
+"32768Hz","Y1","Crystal:Crystal_Round_D2.0mm_Vertical",""

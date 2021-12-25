@@ -1,4 +1,6 @@
 #include <avr/io.h>
+#include <avr/sleep.h>
+#include <avr/interrupt.h>
 
 void wait(long cycles) { for(volatile long t = 0; t < cycles; t++); }
 
@@ -126,39 +128,70 @@ int read(int port, int scl, int sda, int addr, int ptr) {
 	return res;
 }
 
-int main() {
+void clrCol(int col) { // clear an LED column
+	write(0,0,1, 0x70, 2*col, 0x00);
+}
 
+// LED patterns for each digit
+const char digCol2[] = { 0b011, 0b111, 0b110, 0b111, 0b111, 0b011, 0b011, 0b111, 0b111, 0b111 };
+const char digCol1[] = { 0b011, 0b000, 0b011, 0b101, 0b010, 0b110, 0b111, 0b100, 0b111, 0b110 };
+void twoDigit(int col, int a, int b) {
+	write(0,0,1, 0x70, 2*col, (digCol1[a] << 4) | (digCol1[b] >> 1) | (digCol1[b] << 7));
+	write(0,0,1, 0x70, 2*(col + 1), (digCol2[a] << 4) | (digCol2[b] >> 1) | (digCol2[b] << 7));
+}
+
+void turnOff() {
+	for(int c = 0; c < 8; c++) {
+		clrCol(c); // clear screen
+	}
+	SREG |= 0x80; // enable interrupts
+	GIMSK |= 0x40; // enable INT0 interrupt
+	MCUCR &= ~0x03; // interrupt on level low
+	//MCUCR |= 0x30; // sleep enable and enter power-down mode
+	sleep_enable();
+	sei();
+	sleep_cpu();
+}
+
+int buf;
+void time() {
+	for(int t = 0; t < 1000; t++) {
+		buf = read(1,0,1, 0x68, 0x02); // hour
+		twoDigit(0, buf >> 4, buf & 0b1111);
+		clrCol(2);
+		buf = read(1,0,1, 0x68, 0x01); // minute
+		twoDigit(3, buf >> 4, buf & 0b1111);
+		clrCol(5);
+		buf = read(1,0,1, 0x68, 0x00); // second
+		twoDigit(6, buf >> 4, buf & 0b1111);
+	}
+	if(!get(1, 2)) {
+		time();
+	} else {
+		turnOff();
+	}
+}
+
+ISR(INT0_vect) {
+	GIMSK &= ~0x40; // disable INT0 interrupt
+	SREG &= ~0x80; // disable interrupts
+	time();
+}
+
+int main() {
 	DDRA = 0;
 	DDRB = 0;
 
 	wait(30000);
 
-	//setRegA(0, 1, 0x70, 0x20, 0x21);
-	//setRegA(0, 1, 0x70, 0x80, 0x87);
-	cmd(0,0,1, 0x70, 0x21); // init
-	cmd(0,0,1, 0x70, 0x81); // blink
-	cmd(0,0,1, 0x70, 0xE0); // dim
-	write(0,0,1, 0x70, 0x00, 0xAA); // write from first byte
-	write(0,0,1, 0x70, 0x02, 0x55);
-	write(0,0,1, 0x70, 0x04, 0xAA);
-	write(0,0,1, 0x70, 0x06, 0x55);
-	write(0,0,1, 0x70, 0x08, 0xAA);
-	write(0,0,1, 0x70, 0x0A, 0x55);
-	write(0,0,1, 0x70, 0x0C, 0xAA);
-	write(0,0,1, 0x70, 0x0E, 0x55);
+	if(read(1,0,1, 0x68, 0x00) == 0x80) {
+		cmd(0,0,1, 0x70, 0x21); // init screen
+		cmd(0,0,1, 0x70, 0x81); // no blink
+		cmd(0,0,1, 0x70, 0xE0); // dim
 
-	write(1,0,1, 0x68, 0x00, 0x00);
-	write(1,0,1, 0x68, 0x07, 0x90);
-
-	wait(100000);
-	while(1) {
-		write(0,0,1, 0x70, 0x00, read(1,0,1, 0x68, 0x00));
-		write(0,0,1, 0x70, 0x02, read(1,0,1, 0x68, 0x01));
-		write(0,0,1, 0x70, 0x04, read(1,0,1, 0x68, 0x02));
-		write(0,0,1, 0x70, 0x06, read(1,0,1, 0x68, 0x03));
-		write(0,0,1, 0x70, 0x08, read(1,0,1, 0x68, 0x04));
-		write(0,0,1, 0x70, 0x0a, read(1,0,1, 0x68, 0x05));
-		write(0,0,1, 0x70, 0x0c, read(1,0,1, 0x68, 0x06));
-		write(0,0,1, 0x70, 0x0e, read(1,0,1, 0x68, 0x07));
+		write(1,0,1, 0x68, 0x00, 0x00); // enable DS1307
+		write(1,0,1, 0x68, 0x07, 0x90); // disable buzzer
 	}
+
+	time();
 }

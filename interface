@@ -1,0 +1,67 @@
+buttons
+	A B
+	C D
+
+sleep mode
+	display blank
+	pressing B enters time mode
+
+time mode
+	displays time
+		H M S
+		H M S
+	holding B keeps display on
+		holding B and pressing A enters time set mode
+	pressing A enters date mode
+	pressing C or D enters alarm list mode
+	enters sleep mode 3-4 seconds after being initialized
+time set mode
+	displays a current setting for the time
+		H M
+		H M
+	C or D move cursor left or right
+	A or B change H/M up or down
+	pressing C and D together sets the time (0 for second) and enters time mode
+	listens for alarms and enters alarm tone mode if necessary
+
+date mode
+	displays date
+		M D Y
+		M D Y
+	releasing A enters time mode
+	pressing B (with A still pressed) enters date set mode
+date set mode
+	displays a current setting for the date
+		M D Y
+		M D Y
+	C or D move cursor left or right
+	A or B change M/D/Y up or down
+	pressing C and D together sets the date and enters date mode
+
+alarm select mode
+	one of 4 alarms is presented
+		either leftmost or rightmost
+			depending on if D or C respectively was pressed
+		display format:
+			H M
+			H M
+	two dots on the bottom are used as a visual horizontal scrollbar
+	C or D change left or right between the 4 alarms
+		going off the edge results in entering time mode
+			a beep is played to signify this
+	if an alarm is disabled, it is blank in that slot
+	A disables an alarm
+	B enables a disabled alarm
+	pressing B on an already enabled alarm enters alarm set mode on that alarm
+alarm set mode
+	displays a current setting for the alarm
+		H M
+		H M
+	C or D move cursor left or right
+	A or B change H/M up or down
+	pressing C and D together sets the alarm and enters time mode
+alarm tone mode
+	displays time, as in time mode
+	beeps on and off repeatedly
+	any button enters time mode
+	automatically enters time mode 5 minutes after the alarm time has passed
